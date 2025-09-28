@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhereToTrip - 항공권 검색</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .search-section {
+            padding: 40px;
+        }
+
+        .search-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .form-group input, .form-group select {
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            grid-column: 1 / -1;
+            justify-self: center;
+            width: 200px;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .budget-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .budget-section h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .budget-slider {
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        .budget-display {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin: 10px 0;
+        }
+
+        .destinations {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+            min-height: 100px;
+            border: 2px dashed #ccc;
+            padding: 10px;
+        }
+
+        .destination-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .destination-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .destination-card.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .results-section {
+            margin-top: 30px;
+        }
+
+        .flight-card {
+            background: white;
+            border: 1px solid #e1e5e9;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+
+        .flight-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .flight-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .flight-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .detail-item {
+            text-align: center;
+        }
+
+        .detail-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .search-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✈️ WhereToTrip</h1>
+            <p>예산에 맞는 최적의 항공권을 찾아보세요</p>
+        </div>
+
+        <div class="search-section">
+            <div class="budget-section">
+                <h3>💰 예산 설정</h3>
+                <div class="budget-display" id="budgetDisplay">300,000원</div>
+                <input type="range" id="budgetSlider" class="budget-slider" 
+                       min="100000" max="1000000" step="50000" value="300000">
+                <div class="destinations" id="destinations"></div>
+            </div>
+
+            <div class="search-form">
+                <div class="form-group">
+                    <label for="origin">출발지</label>
+                    <input type="text" id="origin" placeholder="예: ICN (인천)" value="ICN">
+                </div>
+                <div class="form-group">
+                    <label for="departureDate">출발일</label>
+                    <input type="date" id="departureDate">
+                </div>
+                <div class="form-group">
+                    <label for="adults">성인</label>
+                    <select id="adults">
+                        <option value="1">1명</option>
+                        <option value="2">2명</option>
+                        <option value="3">3명</option>
+                        <option value="4">4명</option>
+                    </select>
+                </div>
+                <button type="button" class="search-btn" onclick="loadCountries()">🌍 나라 목록 보기</button>
+            </div>
+
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <h3>검색 결과</h3>
+                <div id="flightResults"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 예산 슬라이더 이벤트
+        const budgetSlider = document.getElementById('budgetSlider');
+        const budgetDisplay = document.getElementById('budgetDisplay');
+        const destinations = document.getElementById('destinations');
+
+        budgetSlider.addEventListener('input', function() {
+            const budget = parseInt(this.value);
+            budgetDisplay.textContent = budget.toLocaleString() + '원';
+            loadDestinations(budget);
+        });
+
+        // 예산별 나라 목록 로드
+        async function loadDestinations(budget) {
+            try {
+                console.log('나라 목록 로드 시작, 예산:', budget);
+                const response = await fetch(`/api/flights/destinations?maxBudget=${budget}`);
+                const data = await response.json();
+                console.log('받은 데이터:', data);
+                
+                const destinationsElement = document.getElementById('destinations');
+                console.log('destinations 요소:', destinationsElement);
+                
+                if (destinationsElement) {
+                    const html = data.map(dest => `
+                        <div class="destination-card" onclick="searchCountryFlights('${dest.code}', '${dest.city}', '${dest.country}')">
+                            <h4>${dest.city}</h4>
+                            <p>${dest.country}</p>
+                            <p><strong>예상 ${dest.estimatedPrice.toLocaleString()}원</strong></p>
+                        </div>
+                    `).join('');
+                    
+                    console.log('생성된 HTML:', html);
+                    destinationsElement.innerHTML = html;
+                    console.log('HTML 삽입 완료');
+                } else {
+                    console.error('destinations 요소를 찾을 수 없습니다.');
+                }
+            } catch (error) {
+                console.error('나라 목록 로드 실패:', error);
+            }
+        }
+
+        // 나라 버튼 클릭 시 항공권 검색
+        async function searchCountryFlights(code, city, country) {
+            const origin = document.getElementById('origin').value;
+            const departureDate = document.getElementById('departureDate').value;
+            const adults = parseInt(document.getElementById('adults').value);
+            const maxPrice = parseInt(budgetSlider.value);
+
+            if (!departureDate) {
+                alert('출발일을 선택해주세요.');
+                return;
+            }
+
+            const resultsSection = document.getElementById('resultsSection');
+            const flightResults = document.getElementById('flightResults');
+            
+            resultsSection.style.display = 'block';
+            flightResults.innerHTML = `<div class="loading">${city}(${country}) 항공권 검색 중...</div>`;
+
+            try {
+                const response = await fetch(`/api/flights/search/country?origin=${origin}&destination=${code}&departureDate=${departureDate}&adults=${adults}&maxPrice=${maxPrice}`);
+                const data = await response.json();
+                
+                if (data.offers && data.offers.length > 0) {
+                    flightResults.innerHTML = `
+                        <h3>✈️ ${city}(${country}) 항공권 검색 결과</h3>
+                        ${data.offers.map(offer => `
+                            <div class="flight-card">
+                                <div class="flight-header">
+                                    <h4>${offer.airline || '항공사 정보 없음'}</h4>
+                                    <div class="price">${parseFloat(offer.price).toLocaleString()} ${offer.currency}</div>
+                                </div>
+                                <div class="flight-details">
+                                    <div class="detail-item">
+                                        <div class="detail-label">노선</div>
+                                        <div class="detail-value">${offer.departureAirport || 'N/A'} → ${offer.arrivalAirport || 'N/A'}</div>
+                                    </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label">출발시간</div>
+                                        <div class="detail-value">${formatDateTime(offer.departureTime)}</div>
+                                    </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label">도착시간</div>
+                                        <div class="detail-value">${formatDateTime(offer.arrivalTime)}</div>
+                                    </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label">소요시간</div>
+                                        <div class="detail-value">${offer.duration || '정보 없음'}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    `;
+                } else {
+                    flightResults.innerHTML = `<div class="error">${city}(${country})에 해당 조건에 맞는 항공권을 찾을 수 없습니다.</div>`;
+                }
+            } catch (error) {
+                console.error('항공권 검색 실패:', error);
+                flightResults.innerHTML = '<div class="error">검색 중 오류가 발생했습니다.</div>';
+            }
+        }
+
+        // 나라 목록 로드 (버튼 클릭 시)
+        async function loadCountries() {
+            console.log('loadCountries 함수 호출됨');
+            const budget = parseInt(budgetSlider.value);
+            console.log('예산 값:', budget);
+            await loadDestinations(budget);
+        }
+
+
+        // 날짜 포맷팅
+        function formatDateTime(dateTimeString) {
+            if (!dateTimeString) return '정보 없음';
+            const date = new Date(dateTimeString);
+            return date.toLocaleString('ko-KR', {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            // 오늘 날짜를 기본값으로 설정
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('departureDate').value = tomorrow.toISOString().split('T')[0];
+            
+            // 초기 나라 목록 로드
+            loadDestinations(300000);
+        });
+    </script>
+</body>
+</html>

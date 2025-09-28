@@ -20,9 +20,9 @@ public class AmadeusConfig {
 	@Bean
 	public Amadeus amadeus() {
 		if ("prod".equalsIgnoreCase(environment) || "production".equalsIgnoreCase(environment)) {
-			return Amadeus.builder(apiKey, apiSecret).setHostname("api.amadeus.com").build();
+			return Amadeus.builder(apiKey, apiSecret).setHostname("production").build();
 		}
-		return Amadeus.builder(apiKey, apiSecret).setHostname("test.api.amadeus.com").build();
+		return Amadeus.builder(apiKey, apiSecret).setHostname("test").build();
 	}
 }
 
